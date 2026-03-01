@@ -116,7 +116,7 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
   <!--/radix_placeholder_rmarkdown_metadata-->
   
   <script type="text/json" id="radix-resource-manifest">
-  {"type":"character","attributes":{},"value":["index_files/anchor-4.2.2/anchor.min.js","index_files/bowser-1.9.3/bowser.min.js","index_files/distill-2.2.21/template.v2.js","index_files/header-attrs-2.17/header-attrs.js","index_files/header-attrs-2.30/header-attrs.js","index_files/jquery-3.6.0/jquery-3.6.0.js","index_files/jquery-3.6.0/jquery-3.6.0.min.js","index_files/jquery-3.6.0/jquery-3.6.0.min.map","index_files/popper-2.6.0/popper.min.js","index_files/tippy-6.2.7/tippy-bundle.umd.min.js","index_files/tippy-6.2.7/tippy-light-border.css","index_files/tippy-6.2.7/tippy.css","index_files/tippy-6.2.7/tippy.umd.min.js","index_files/webcomponents-2.0.0/webcomponents.js"]}
+  {"type":"character","attributes":{},"value":["Final Proj Data/pi-dataset-february-2026release.csv","index_files/anchor-4.2.2/anchor.min.js","index_files/bowser-1.9.3/bowser.min.js","index_files/distill-2.2.21/template.v2.js","index_files/header-attrs-2.17/header-attrs.js","index_files/header-attrs-2.30/header-attrs.js","index_files/jquery-3.6.0/jquery-3.6.0.js","index_files/jquery-3.6.0/jquery-3.6.0.min.js","index_files/jquery-3.6.0/jquery-3.6.0.min.map","index_files/popper-2.6.0/popper.min.js","index_files/tippy-6.2.7/tippy-bundle.umd.min.js","index_files/tippy-6.2.7/tippy-light-border.css","index_files/tippy-6.2.7/tippy.css","index_files/tippy-6.2.7/tippy.umd.min.js","index_files/webcomponents-2.0.0/webcomponents.js"]}
   </script>
   <!--radix_placeholder_navigation_in_header-->
   <!--/radix_placeholder_navigation_in_header-->
@@ -1551,7 +1551,64 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
 <li><p>Healthcare coverage and insurance pricing. Similar to above, I think this would be interesting to explore.</p></li>
 <li><p>FDA data. Now that there are new regulations (or lack thereof) for testing food products for common pathogens, I want to see how much the number of recalls has increased under the new administration.</p></li>
 </ul>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r distill-force-highlighting-css"><code class="sourceCode r"></code></pre></div>
+<p><strong>## Project Outline (Milestone 2)</strong></p>
+<p>My Final Project Research Question:
+Did states that expanded Medicaid under the Affordable Care Act experience larger declines in uninsured rates than states that did not expand?
+Sub-questions:
+-Did the effect differ by income level?
+- Did the effect differ more in cities than in rural areas?</p>
+<h1 id="my-hypothesis">My Hypothesis:</h1>
+<p><strong>States that expanded Medicaid will experience larger reductions in uninsured rates than states that did not expand Medicaid.</strong></p>
+<p>I think this will prove true because the lack of insurance coverage can often be attributed to financial inaccessibility and restraints on eligibility. The affordable care act attempted to lower both of these hurdles for the American public, but it’s hard to say whether it was effective.
+In 2014, just before the Affordable Care Act was passed,</p>
+<p>Many low-income adults earned too much to qualify for traditional Medicaid, but too little to afford private insurance coverage. This created a coverage gap for middle-income and some low-income households.</p>
+<p>Ideally, when prices of healthcare decrease and eligibility is expanded through federal programs, healthcare coverage nationwide should increase.Therefore, I expect a systematic decline in uninsured rates in expansion states relative to non-expansion states.</p>
+<h1 id="explanatory-variables">Explanatory Variables:</h1>
+<p>I will be doing a difference-in-differences model. Basically, I will be analyzing the coverage levels and uninsured rates across states and across years.</p>
+<p>Variable 1: State expansion. Did this state adopt the Affordable Care Act’s adjustments within the years of 2014 and 2020? This will be a simple yes or no in terms of measurements, and can be accessed through public data and state legislature. (output 0 or 1)
+Variable 2: Uninsured Rate. What were the rates for uninsured individuals in this state during the years in question? This will be a number of USD, one value/rate per year.</p>
+<p>Subquestion variables:</p>
+<p>Income level. Did the trends observed above change when grouped by household income?
+Area population. Did the trends observed above change when grouped by cities vs rural areas?</p>
+<h1 id="outcome-variables">Outcome Variables:</h1>
+<p>Coverage proportion by state: The percentage of individuals in a state-year without health insurance coverage. This will be measured by a percent using public data from the American Community Survey (ACS) and Kaiser Family Foundation state-level insurance data</p>
+<h1 id="what-would-prove-my-hypothesis-true">What would prove my hypothesis true?</h1>
+<p>Expansion and non-expansion states have similar uninsured trends before expansion (parallel trends assumption).</p>
+<p>After expansion begins (2014), uninsured rates decline more sharply in expansion states than in non-expansion states.</p>
+<p>The correlation on the expansion variable (once made into a regression equation or visualized in figures) is:</p>
+<ul>
+<li><p>Negative (meaning states who adopted the act had increased coverage over time)</p></li>
+<li><p>Statistically significant</p></li>
+</ul>
+<h1 id="what-would-disprove-my-hypothesis">What would disprove my hypothesis?</h1>
+<ul>
+<li>Expansion and non-expansion states had the same amount of change in coverage proportion and/or uninsured rate.</li>
+<li>States who did not expand had more coverage or lower uninsured rates over time.</li>
+</ul>
+<h1 id="data-code">Data code</h1>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>enrollment_data</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://readr.tidyverse.org/reference/read_delim.html'>read_csv</a></span><span class='op'>(</span><span class='st'>"Final Proj Data/pi-dataset-february-2026release.csv"</span><span class='op'>)</span></span>
+<span><span class='fu'><a href='https://rdrr.io/r/utils/head.html'>head</a></span><span class='op'>(</span><span class='va'>enrollment_data</span><span class='op'>)</span></span></code></pre>
+</div>
+<pre><code># A tibble: 6 × 44
+  `State Abbreviation` `State Name` `Reporting Period`
+  &lt;chr&gt;                &lt;chr&gt;                     &lt;dbl&gt;
+1 AK                   Alaska                   201309
+2 AK                   Alaska                   201706
+3 AK                   Alaska                   201706
+4 AK                   Alaska                   201707
+5 AK                   Alaska                   201707
+6 AK                   Alaska                   201708
+# ℹ 41 more variables: `State Expanded Medicaid` &lt;chr&gt;,
+#   `Preliminary or Updated` &lt;chr&gt;, `Final Report` &lt;chr&gt;,
+#   `New Applications Submitted to Medicaid and CHIP Agencies` &lt;dbl&gt;,
+#   `New Applications Submitted to Medicaid and CHIP Agencies - footnotes` &lt;chr&gt;,
+#   `Applications for Financial Assistance Submitted to the State Based Marketplace` &lt;dbl&gt;,
+#   `Applications for Financial Assistance Submitted to the State Based Marketplace - footnotes` &lt;chr&gt;,
+#   `Total Applications for Financial Assistance Submitted at State Level` &lt;dbl&gt;, …</code></pre>
+</div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r distill-force-highlighting-css"><code class="sourceCode r"></code></pre></div>
 <!--radix_placeholder_article_footer-->
 <!--/radix_placeholder_article_footer-->
 </div>
