@@ -13,7 +13,6 @@ library(readr)
 library(dplyr)
 ```
 
-
 ## Project thoughts
 
 I am interested in exploring data related to...
