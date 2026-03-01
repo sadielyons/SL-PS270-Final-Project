@@ -25,7 +25,7 @@ I am interested in exploring data related to...
 
 
 
-**## Project Outline (Milestone 2)**
+# Project Outline (Milestone 2)
 
 My Final Project Research Question:
 Did states that expanded Medicaid under the Affordable Care Act experience larger declines in uninsured rates than states that did not expand? 
@@ -33,7 +33,7 @@ Sub-questions:
 -Did the effect differ by income level?
 - Did the effect differ more in cities than in rural areas?
 
-# My Hypothesis:
+## My Hypothesis:
 
 **States that expanded Medicaid will experience larger reductions in uninsured rates than states that did not expand Medicaid.**
 
@@ -44,7 +44,7 @@ Many low-income adults earned too much to qualify for traditional Medicaid, but 
 
 Ideally, when prices of healthcare decrease and eligibility is expanded through federal programs, healthcare coverage nationwide should increase.Therefore, I expect a systematic decline in uninsured rates in expansion states relative to non-expansion states.
 
-# Explanatory Variables:
+## Explanatory Variables:
 
 I will be doing a difference-in-differences model. Basically, I will be analyzing the coverage levels and uninsured rates across states and across years.
 
@@ -56,10 +56,10 @@ Subquestion variables:
 Income level. Did the trends observed above change when grouped by household income?
 Area population. Did the trends observed above change when grouped by cities vs rural areas?
 
-# Outcome Variables:
+## Outcome Variables:
 Coverage proportion by state: The percentage of individuals in a state-year without health insurance coverage. This will be measured by a percent using public data from the American Community Survey (ACS) and Kaiser Family Foundation state-level insurance data
 
-# What would prove my hypothesis true?
+## What would prove my hypothesis true?
 Expansion and non-expansion states have similar uninsured trends before expansion (parallel trends assumption).
 
 After expansion begins (2014), uninsured rates decline more sharply in expansion states than in non-expansion states.
@@ -70,11 +70,11 @@ The correlation on the expansion variable (once made into a regression equation 
 
 - Statistically significant
 
-# What would disprove my hypothesis?
+## What would disprove my hypothesis?
 - Expansion and non-expansion states had the same amount of change in coverage proportion and/or uninsured rate. 
 - States who did not expand had more coverage or lower uninsured rates over time. 
 
-# Data code
+## Data code
 
 ```{r}
 enrollment_data <- read_csv("Final Proj Data/pi-dataset-february-2026release.csv")
