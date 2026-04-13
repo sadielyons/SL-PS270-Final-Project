@@ -116,7 +116,7 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
   <!--/radix_placeholder_rmarkdown_metadata-->
   
   <script type="text/json" id="radix-resource-manifest">
-  {"type":"character","attributes":{},"value":["Final Proj Data/pi-dataset-february-2026release.csv","index_files/anchor-4.2.2/anchor.min.js","index_files/bowser-1.9.3/bowser.min.js","index_files/distill-2.2.21/template.v2.js","index_files/header-attrs-2.17/header-attrs.js","index_files/header-attrs-2.30/header-attrs.js","index_files/jquery-3.6.0/jquery-3.6.0.js","index_files/jquery-3.6.0/jquery-3.6.0.min.js","index_files/jquery-3.6.0/jquery-3.6.0.min.map","index_files/popper-2.6.0/popper.min.js","index_files/tippy-6.2.7/tippy-bundle.umd.min.js","index_files/tippy-6.2.7/tippy-light-border.css","index_files/tippy-6.2.7/tippy.css","index_files/tippy-6.2.7/tippy.umd.min.js","index_files/webcomponents-2.0.0/webcomponents.js"]}
+  {"type":"character","attributes":{},"value":["Datasets/2008to2024_coverage.csv","Datasets/Coverage by Race and Expansion Status.csv","Datasets/Expenditure_2003_2019.CSV","Datasets/medicaid_expansion_tracker.csv","Datasets/meps_00001.dat","Datasets/pi-dataset-february-2026release.csv","Datasets/States_adopted_2025.csv","Datasets/Uninsured_2023.csv","Datasets/Uninsured_Race_2010to2023.csv","did_parallel_trends.png","index_files/anchor-4.2.2/anchor.min.js","index_files/bowser-1.9.3/bowser.min.js","index_files/bsTable-3.3.7/bootstrapTable.js","index_files/bsTable-3.3.7/bootstrapTable.min.css","index_files/distill-2.2.21/template.v2.js","index_files/figure-html5/unnamed-chunk-7-1.png","index_files/header-attrs-2.17/header-attrs.js","index_files/header-attrs-2.30/header-attrs.js","index_files/jquery-3.6.0/jquery-3.6.0.js","index_files/jquery-3.6.0/jquery-3.6.0.min.js","index_files/jquery-3.6.0/jquery-3.6.0.min.map","index_files/kePrint-0.0.1/kePrint.js","index_files/lightable-0.0.1/lightable.css","index_files/popper-2.6.0/popper.min.js","index_files/tippy-6.2.7/tippy-bundle.umd.min.js","index_files/tippy-6.2.7/tippy-light-border.css","index_files/tippy-6.2.7/tippy.css","index_files/tippy-6.2.7/tippy.umd.min.js","index_files/webcomponents-2.0.0/webcomponents.js"]}
   </script>
   <!--radix_placeholder_navigation_in_header-->
   <!--/radix_placeholder_navigation_in_header-->
@@ -1499,6 +1499,10 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
 
   <!--/radix_placeholder_distill-->
   <script src="index_files/header-attrs-2.30/header-attrs.js"></script>
+  <script src="index_files/kePrint-0.0.1/kePrint.js"></script>
+  <link href="index_files/lightable-0.0.1/lightable.css" rel="stylesheet" />
+  <link href="index_files/bsTable-3.3.7/bootstrapTable.min.css" rel="stylesheet" />
+  <script src="index_files/bsTable-3.3.7/bootstrapTable.js"></script>
   <script src="index_files/jquery-3.6.0/jquery-3.6.0.min.js"></script>
   <script src="index_files/popper-2.6.0/popper.min.js"></script>
   <link href="index_files/tippy-6.2.7/tippy.css" rel="stylesheet" />
@@ -1585,30 +1589,256 @@ Area population. Did the trends observed above change when grouped by cities vs 
 <li>Expansion and non-expansion states had the same amount of change in coverage proportion and/or uninsured rate.</li>
 <li>States who did not expand had more coverage or lower uninsured rates over time.</li>
 </ul>
-<h2 id="data-code">Data code</h2>
+<h2 id="initial-steps-figures-etc.-milestones-2-4">Initial Steps, Figures, etc. (Milestones 2-4)</h2>
+<p>Here are some notes from congress.gov about when each state expanded Medicaid under the affordable care act:</p>
+<p>Since January 1, 2014, states have had the option to extend Medicaid coverage to most non-elderly adults with income up to 133% of FPL. Twenty-five states (including the District of Columbia) implemented the ACA Medicaid expansion at that time. Since then, the following 12 states have implemented the expansion: Michigan (April 1, 2014), New Hampshire (July 1, 2014), Pennsylvania (January 1, 2015), Indiana (February 1, 2015), Alaska (September 1, 2015), Montana (January 1, 2016), Louisiana (July 1, 2016), Virginia (January 1, 2019), Maine (January 10, 2019), Idaho (January 1, 2020), Utah (January 1, 2020), and Nebraska (October 1, 2020). (See Figure 1.)</p>
+<p>So,
+1/1/2014: Arizona, Arkansas, California, Colorado, Connecticut, Delaware, District of Columbia, Hawaii, Illinois, Iowa, Kentucky, Maryland, Massachusetts, Minnesota, Nevada, New Jersey, New Mexico, New York, North Dakota, Ohio, Oregon, Rhode Island, Vermont, and Washington</p>
+<p>Later in 2014: Michigan (April 1) and New Hampshire (August 15)</p>
+<p>2015: Pennsylvania (January 1), Indiana (February 1), and Alaska (September 1)</p>
+<p>2016: Montana (Jan 1) and Louisiana (July 1)</p>
+<p>2019: Virginia and Maine (Jan 1)</p>
+<p>2020: Idaho and Utah, (Jan 1) Nebraska (Oct 1)</p>
+<p>2021: Oklahoma (July 1), Missouri (Oct 1)</p>
+<p>2023: South Dakota (July 1) and North Carolina (Dec 1)
+## Data code</p>
+<h1 id="data-setup">Data setup</h1>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>enrollment_data</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://readr.tidyverse.org/reference/read_delim.html'>read_csv</a></span><span class='op'>(</span><span class='st'>"Final Proj Data/pi-dataset-february-2026release.csv"</span><span class='op'>)</span></span>
-<span><span class='fu'><a href='https://rdrr.io/r/utils/head.html'>head</a></span><span class='op'>(</span><span class='va'>enrollment_data</span><span class='op'>)</span></span></code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>expansion_data</span>    <span class='op'>&lt;-</span> <span class='fu'><a href='https://readr.tidyverse.org/reference/read_delim.html'>read_csv</a></span><span class='op'>(</span><span class='st'>"Datasets/medicaid_expansion_tracker.csv"</span><span class='op'>)</span></span>
+<span><span class='va'>perc_uninsured</span>     <span class='op'>&lt;-</span> <span class='fu'><a href='https://readr.tidyverse.org/reference/read_delim.html'>read_csv</a></span><span class='op'>(</span><span class='st'>"Datasets/2008to2024_coverage.csv"</span><span class='op'>)</span></span>
+<span><span class='va'>healthcare_cost</span>    <span class='op'>&lt;-</span> <span class='fu'><a href='https://readr.tidyverse.org/reference/read_delim.html'>read_csv</a></span><span class='op'>(</span><span class='st'>"Datasets/Expenditure_2003_2019.csv"</span><span class='op'>)</span></span></code></pre>
 </div>
-<pre><code># A tibble: 6 × 44
-  `State Abbreviation` `State Name` `Reporting Period`
-  &lt;chr&gt;                &lt;chr&gt;                     &lt;dbl&gt;
-1 AK                   Alaska                   201309
-2 AK                   Alaska                   201706
-3 AK                   Alaska                   201706
-4 AK                   Alaska                   201707
-5 AK                   Alaska                   201707
-6 AK                   Alaska                   201708
-# ℹ 41 more variables: `State Expanded Medicaid` &lt;chr&gt;,
-#   `Preliminary or Updated` &lt;chr&gt;, `Final Report` &lt;chr&gt;,
-#   `New Applications Submitted to Medicaid and CHIP Agencies` &lt;dbl&gt;,
-#   `New Applications Submitted to Medicaid and CHIP Agencies - footnotes` &lt;chr&gt;,
-#   `Applications for Financial Assistance Submitted to the State Based Marketplace` &lt;dbl&gt;,
-#   `Applications for Financial Assistance Submitted to the State Based Marketplace - footnotes` &lt;chr&gt;,
-#   `Total Applications for Financial Assistance Submitted at State Level` &lt;dbl&gt;, …</code></pre>
 </div>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r distill-force-highlighting-css"><code class="sourceCode r"></code></pre></div>
+<h1 id="cleaning-and-merging">Cleaning and Merging</h1>
+<h3 id="one-row-per-state-year">One row per state-year</h3>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>coverage_clean</span> <span class='op'>&lt;-</span> <span class='va'>perc_uninsured</span> <span class='op'>|&gt;</span></span>
+<span>  <span class='fu'><a href='https://sfirke.github.io/janitor/reference/clean_names.html'>clean_names</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>|&gt;</span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span></span>
+<span>    state <span class='op'>=</span> <span class='fu'><a href='https://stringr.tidyverse.org/reference/case.html'>str_to_upper</a></span><span class='op'>(</span><span class='fu'><a href='https://stringr.tidyverse.org/reference/str_trim.html'>str_trim</a></span><span class='op'>(</span><span class='va'>state</span><span class='op'>)</span><span class='op'>)</span>,</span>
+<span>    year  <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/integer.html'>as.integer</a></span><span class='op'>(</span><span class='va'>year</span><span class='op'>)</span>,</span>
+<span>    uninsured_rate <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/numeric.html'>as.numeric</a></span><span class='op'>(</span><span class='va'>uninsured</span><span class='op'>)</span>,</span>
+<span>    medicaid_rate  <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/numeric.html'>as.numeric</a></span><span class='op'>(</span><span class='va'>medicaid</span><span class='op'>)</span></span>
+<span>  <span class='op'>)</span> <span class='op'>|&gt;</span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>year</span> <span class='op'>&gt;=</span> <span class='fl'>2010</span>, <span class='va'>year</span> <span class='op'>&lt;=</span> <span class='fl'>2019</span>, <span class='va'>state</span> <span class='op'>!=</span> <span class='st'>"UNITED STATES"</span><span class='op'>)</span> <span class='op'>|&gt;</span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/select.html'>select</a></span><span class='op'>(</span><span class='va'>state</span>, <span class='va'>year</span>, <span class='va'>uninsured_rate</span>, <span class='va'>medicaid_rate</span><span class='op'>)</span></span></code></pre>
+</div>
+</div>
+<h3 id="expansion-expansion-year-per-state">Expansion = expansion year per state</h3>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>expansion_clean</span> <span class='op'>&lt;-</span> <span class='va'>expansion_data</span> <span class='op'>|&gt;</span></span>
+<span>  <span class='fu'><a href='https://sfirke.github.io/janitor/reference/clean_names.html'>clean_names</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>|&gt;</span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span></span>
+<span>    state <span class='op'>=</span> <span class='fu'><a href='https://stringr.tidyverse.org/reference/case.html'>str_to_upper</a></span><span class='op'>(</span><span class='fu'><a href='https://stringr.tidyverse.org/reference/str_trim.html'>str_trim</a></span><span class='op'>(</span><span class='va'>state</span><span class='op'>)</span><span class='op'>)</span>,</span>
+<span>    <span class='co'># Handles "01/01/2014", "Not Expanded", NA</span></span>
+<span>    expansion_year <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/integer.html'>as.integer</a></span><span class='op'>(</span></span>
+<span>      <span class='fu'><a href='https://stringr.tidyverse.org/reference/str_extract.html'>str_extract</a></span><span class='op'>(</span><span class='va'>expansion_date</span>, <span class='st'>"\\d{4}"</span><span class='op'>)</span>  <span class='co'># pulls the 4-digit year</span></span>
+<span>    <span class='op'>)</span></span>
+<span>  <span class='op'>)</span> <span class='op'>|&gt;</span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/select.html'>select</a></span><span class='op'>(</span><span class='va'>state</span>, <span class='va'>expansion_year</span><span class='op'>)</span></span></code></pre>
+</div>
+</div>
+<h3 id="keep-only-total-per-capita-spending-from-the-dataset">Keep only total per-capita spending from the dataset</h3>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>spending_clean</span> <span class='op'>&lt;-</span> <span class='va'>healthcare_cost</span> <span class='op'>|&gt;</span></span>
+<span>  <span class='fu'><a href='https://sfirke.github.io/janitor/reference/clean_names.html'>clean_names</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>|&gt;</span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span></span>
+<span>    state <span class='op'>=</span> <span class='fu'><a href='https://stringr.tidyverse.org/reference/case.html'>str_to_upper</a></span><span class='op'>(</span><span class='fu'><a href='https://stringr.tidyverse.org/reference/str_trim.html'>str_trim</a></span><span class='op'>(</span><span class='va'>state</span><span class='op'>)</span><span class='op'>)</span>,</span>
+<span>    year  <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/integer.html'>as.integer</a></span><span class='op'>(</span><span class='va'>year</span><span class='op'>)</span>,</span>
+<span>    healthcare_spending <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/numeric.html'>as.numeric</a></span><span class='op'>(</span><span class='va'>val</span><span class='op'>)</span></span>
+<span>  <span class='op'>)</span> <span class='op'>|&gt;</span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/filter.html'>filter</a></span><span class='op'>(</span></span>
+<span>    <span class='va'>year</span> <span class='op'>&gt;=</span> <span class='fl'>2010</span>, <span class='va'>year</span> <span class='op'>&lt;=</span> <span class='fl'>2019</span>,</span>
+<span>    <span class='va'>group</span>    <span class='op'>==</span> <span class='st'>"Total"</span>,</span>
+<span>    <span class='va'>subgroup</span> <span class='op'>==</span> <span class='st'>"Total"</span>,</span>
+<span>    <span class='va'>metric</span>   <span class='op'>==</span> <span class='st'>"Spending per capita"</span></span>
+<span>  <span class='op'>)</span> <span class='op'>|&gt;</span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/select.html'>select</a></span><span class='op'>(</span><span class='va'>state</span>, <span class='va'>year</span>, <span class='va'>healthcare_spending</span><span class='op'>)</span></span></code></pre>
+</div>
+</div>
+<h3 id="merge-everything">Merge everything</h3>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>merged</span> <span class='op'>&lt;-</span> <span class='va'>coverage_clean</span> <span class='op'>|&gt;</span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate-joins.html'>left_join</a></span><span class='op'>(</span><span class='va'>expansion_clean</span>,  by <span class='op'>=</span> <span class='st'>"state"</span><span class='op'>)</span> <span class='op'>|&gt;</span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate-joins.html'>left_join</a></span><span class='op'>(</span><span class='va'>spending_clean</span>,   by <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"state"</span>, <span class='st'>"year"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>|&gt;</span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span></span>
+<span>    treated  <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/integer.html'>as.integer</a></span><span class='op'>(</span><span class='op'>!</span><span class='fu'><a href='https://rdrr.io/r/base/NA.html'>is.na</a></span><span class='op'>(</span><span class='va'>expansion_year</span><span class='op'>)</span><span class='op'>)</span>,          <span class='co'># ever expanded?</span></span>
+<span>    post_aca <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/integer.html'>as.integer</a></span><span class='op'>(</span><span class='op'>!</span><span class='fu'><a href='https://rdrr.io/r/base/NA.html'>is.na</a></span><span class='op'>(</span><span class='va'>expansion_year</span><span class='op'>)</span> <span class='op'>&amp;</span></span>
+<span>                            <span class='va'>year</span> <span class='op'>&gt;=</span> <span class='va'>expansion_year</span><span class='op'>)</span>          <span class='co'># post-expansion period?</span></span>
+<span>  <span class='op'>)</span></span></code></pre>
+</div>
+</div>
+<h1 id="did-line-plot">DiD line plot</h1>
+<p>Shows average uninsured rate by year for expansion vs. non-expansion states.The dashed line marks 2014, when most states expanded.</p>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>plot_data</span> <span class='op'>&lt;-</span> <span class='va'>merged</span> <span class='op'>|&gt;</span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/group_by.html'>group_by</a></span><span class='op'>(</span><span class='va'>year</span>, <span class='va'>treated</span><span class='op'>)</span> <span class='op'>|&gt;</span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/summarise.html'>summarise</a></span><span class='op'>(</span>mean_uninsured <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/mean.html'>mean</a></span><span class='op'>(</span><span class='va'>uninsured_rate</span>, na.rm <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span>, .groups <span class='op'>=</span> <span class='st'>"drop"</span><span class='op'>)</span> <span class='op'>|&gt;</span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span>Group <span class='op'>=</span> <span class='fu'><a href='https://dplyr.tidyverse.org/reference/if_else.html'>if_else</a></span><span class='op'>(</span><span class='va'>treated</span> <span class='op'>==</span> <span class='fl'>1</span>, <span class='st'>"Expansion States"</span>, <span class='st'>"Non-Expansion States"</span><span class='op'>)</span><span class='op'>)</span></span>
+<span></span>
+<span><span class='va'>did_plot</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='va'>plot_data</span>, <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>year</span>, y <span class='op'>=</span> <span class='va'>mean_uninsured</span>, color <span class='op'>=</span> <span class='va'>Group</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_path.html'>geom_line</a></span><span class='op'>(</span>linewidth <span class='op'>=</span> <span class='fl'>1.3</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_point.html'>geom_point</a></span><span class='op'>(</span>size <span class='op'>=</span> <span class='fl'>2.5</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_abline.html'>geom_vline</a></span><span class='op'>(</span>xintercept <span class='op'>=</span> <span class='fl'>2014</span>, linetype <span class='op'>=</span> <span class='st'>"dashed"</span>, color <span class='op'>=</span> <span class='st'>"grey40"</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/annotate.html'>annotate</a></span><span class='op'>(</span><span class='st'>"text"</span>, x <span class='op'>=</span> <span class='fl'>2014.15</span>, y <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/Extremes.html'>max</a></span><span class='op'>(</span><span class='va'>plot_data</span><span class='op'>$</span><span class='va'>mean_uninsured</span><span class='op'>)</span> <span class='op'>*</span> <span class='fl'>0.98</span>,</span>
+<span>           label <span class='op'>=</span> <span class='st'>"ACA Expansion\n(Jan 2014)"</span>, hjust <span class='op'>=</span> <span class='fl'>0</span>, size <span class='op'>=</span> <span class='fl'>3.2</span>, color <span class='op'>=</span> <span class='st'>"grey40"</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/scale_manual.html'>scale_color_manual</a></span><span class='op'>(</span>values <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"Expansion States"</span> <span class='op'>=</span> <span class='st'>"#2166ac"</span>,</span>
+<span>                                <span class='st'>"Non-Expansion States"</span> <span class='op'>=</span> <span class='st'>"#d6604d"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/scale_continuous.html'>scale_x_continuous</a></span><span class='op'>(</span>breaks <span class='op'>=</span> <span class='fl'>2010</span><span class='op'>:</span><span class='fl'>2019</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/labs.html'>labs</a></span><span class='op'>(</span></span>
+<span>    title    <span class='op'>=</span> <span class='st'>"Uninsured Rates: Expansion vs. Non-Expansion States"</span>,</span>
+<span>    x        <span class='op'>=</span> <span class='st'>"Year"</span>,</span>
+<span>    y        <span class='op'>=</span> <span class='st'>"Average Uninsured Rate (%)"</span>,</span>
+<span>    color    <span class='op'>=</span> <span class='cn'>NULL</span>,</span>
+<span>    caption  <span class='op'>=</span> <span class='st'>"2020 omitted (COVID survey disruption). From US Census Data."</span></span>
+<span>  <span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggtheme.html'>theme_minimal</a></span><span class='op'>(</span>base_size <span class='op'>=</span> <span class='fl'>13</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/theme.html'>theme</a></span><span class='op'>(</span></span>
+<span>    legend.position   <span class='op'>=</span> <span class='st'>"top"</span>,</span>
+<span>    panel.grid.minor  <span class='op'>=</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/element.html'>element_blank</a></span><span class='op'>(</span><span class='op'>)</span>,</span>
+<span>    plot.title        <span class='op'>=</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/element.html'>element_text</a></span><span class='op'>(</span>face <span class='op'>=</span> <span class='st'>"bold"</span><span class='op'>)</span></span>
+<span>  <span class='op'>)</span></span>
+<span></span>
+<span><span class='va'>did_plot</span></span></code></pre>
+</div>
+<img src="index_files/figure-html5/unnamed-chunk-7-1.png" alt="" width="624" />
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggsave.html'>ggsave</a></span><span class='op'>(</span><span class='st'>"did_parallel_trends.png"</span>, <span class='va'>did_plot</span>, width <span class='op'>=</span> <span class='fl'>9</span>, height <span class='op'>=</span> <span class='fl'>5.5</span>, dpi <span class='op'>=</span> <span class='fl'>150</span><span class='op'>)</span></span></code></pre>
+</div>
+</div>
+<h1 id="regression-did">Regression DiD</h1>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>did_model</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/lm.html'>lm</a></span><span class='op'>(</span></span>
+<span>  <span class='va'>uninsured_rate</span> <span class='op'>~</span> <span class='va'>post_aca</span> <span class='op'>+</span> <span class='fu'><a href='https://rdrr.io/r/base/factor.html'>factor</a></span><span class='op'>(</span><span class='va'>state</span><span class='op'>)</span> <span class='op'>+</span> <span class='fu'><a href='https://rdrr.io/r/base/factor.html'>factor</a></span><span class='op'>(</span><span class='va'>year</span><span class='op'>)</span>,</span>
+<span>  data <span class='op'>=</span> <span class='va'>merged</span></span>
+<span><span class='op'>)</span></span></code></pre>
+</div>
+</div>
+<h3 id="table-fig-2">Table (Fig 2)</h3>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='http://haozhu233.github.io/kableExtra/'>kableExtra</a></span><span class='op'>)</span></span>
+<span></span>
+<span><span class='fu'><a href='https://modelsummary.com/man/modelsummary.html'>modelsummary</a></span><span class='op'>(</span></span>
+<span>  <span class='va'>did_model</span>,</span>
+<span>  output    <span class='op'>=</span> <span class='st'>"data.frame"</span>,</span>
+<span>  stars     <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"*"</span> <span class='op'>=</span> <span class='fl'>0.1</span>, <span class='st'>"**"</span> <span class='op'>=</span> <span class='fl'>0.05</span>, <span class='st'>"***"</span> <span class='op'>=</span> <span class='fl'>0.01</span><span class='op'>)</span>,</span>
+<span>  statistic <span class='op'>=</span> <span class='st'>"({std.error})"</span>,</span>
+<span>  coef_map  <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"post_aca"</span> <span class='op'>=</span> <span class='st'>"Post-Expansion (DiD Estimate)"</span><span class='op'>)</span>,</span>
+<span>  gof_map   <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"nobs"</span>, <span class='st'>"r.squared"</span>, <span class='st'>"adj.r.squared"</span><span class='op'>)</span></span>
+<span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span><span class='fu'><a href='https://rdrr.io/pkg/knitr/man/kable.html'>kable</a></span><span class='op'>(</span></span>
+<span>  caption <span class='op'>=</span> <span class='st'>"Fig 2. Effect of Medicaid Expansion on Uninsured Rate"</span>,</span>
+<span>  align <span class='op'>=</span> <span class='st'>"lccc"</span></span>
+<span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span><span class='fu'><a href='https://rdrr.io/pkg/kableExtra/man/kable_styling.html'>kable_styling</a></span><span class='op'>(</span>full_width <span class='op'>=</span> <span class='cn'>FALSE</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span><span class='fu'><a href='https://rdrr.io/pkg/kableExtra/man/column_spec.html'>column_spec</a></span><span class='op'>(</span><span class='fl'>1</span>, width <span class='op'>=</span> <span class='st'>"6cm"</span><span class='op'>)</span>   <span class='co'># 👈 wraps long variable names</span></span></code></pre>
+</div>
+<table class="table" style="width: auto !important; margin-left: auto; margin-right: auto;">
+<caption>
+<span id="tab:did-table">Table 1: </span><span id="tab:did-table">Table 2: </span>Fig 2. Effect of Medicaid Expansion on Uninsured Rate
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+part
+</th>
+<th style="text-align:center;">
+term
+</th>
+<th style="text-align:center;">
+statistic
+</th>
+<th style="text-align:center;">
+<ol type="1">
+<li></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;width: 6cm; ">
+estimates
+</td>
+<td style="text-align:center;">
+Post-Expansion (DiD Estimate)
+</td>
+<td style="text-align:center;">
+estimate
+</td>
+<td style="text-align:center;">
+-1.107***
+</td>
+</tr>
+<tr>
+<td style="text-align:left;width: 6cm; ">
+estimates
+</td>
+<td style="text-align:center;">
+Post-Expansion (DiD Estimate)
+</td>
+<td style="text-align:center;">
+({std.error})
+</td>
+<td style="text-align:center;">
+(0.196)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;width: 6cm; ">
+gof
+</td>
+<td style="text-align:center;">
+Num.Obs.
+</td>
+<td style="text-align:center;">
+</td>
+<td style="text-align:center;">
+510
+</td>
+</tr>
+<tr>
+<td style="text-align:left;width: 6cm; ">
+gof
+</td>
+<td style="text-align:center;">
+R2
+</td>
+<td style="text-align:center;">
+</td>
+<td style="text-align:center;">
+0.942
+</td>
+</tr>
+<tr>
+<td style="text-align:left;width: 6cm; ">
+gof
+</td>
+<td style="text-align:center;">
+R2 Adj.
+</td>
+<td style="text-align:center;">
+</td>
+<td style="text-align:center;">
+0.934
+</td>
+</tr>
+</tbody>
+</table></li>
+</ol>
+</div>
+<h1 id="interpretation">Interpretation</h1>
+<p>After a state expanded Medicaid, its uninsured rate fell by 1.1 percentage points more than non-expansion states did over the same period. This is statistically significant at the 1% level.
+If a non-expansion state’s uninsured rate fell from 15% to 13% over the same years, an expansion state would have fallen from 15% to roughly 11.9%.
+Next steps are to map these changes by racial demographic, to map them by individuals who use medicaid as their only form of insurance, and to map early expanders vs later expanders.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r distill-force-highlighting-css"><code class="sourceCode r"></code></pre></div>
+</div>
 <!--radix_placeholder_article_footer-->
 <!--/radix_placeholder_article_footer-->
 </div>

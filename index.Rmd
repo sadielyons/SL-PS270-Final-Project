@@ -11,6 +11,12 @@ output:
 library(tidyverse)
 library(readr)
 library(dplyr)
+library(haven)
+library(ggplot2)
+library(infer)
+library(janitor)
+library(readxl)
+library(kableExtra)
 ```
 
 ## Project thoughts
@@ -74,9 +80,184 @@ The correlation on the expansion variable (once made into a regression equation 
 - Expansion and non-expansion states had the same amount of change in coverage proportion and/or uninsured rate. 
 - States who did not expand had more coverage or lower uninsured rates over time. 
 
+
+## Initial Steps, Figures, etc. (Milestones 2-4)
+
+Here are some notes from congress.gov about when each state expanded Medicaid under the affordable care act:
+
+Since January 1, 2014, states have had the option to extend Medicaid coverage to most non-elderly adults with income up to 133% of FPL. Twenty-five states (including the District of Columbia) implemented the ACA Medicaid expansion at that time. Since then, the following 12 states have implemented the expansion: Michigan (April 1, 2014), New Hampshire (July 1, 2014), Pennsylvania (January 1, 2015), Indiana (February 1, 2015), Alaska (September 1, 2015), Montana (January 1, 2016), Louisiana (July 1, 2016), Virginia (January 1, 2019), Maine (January 10, 2019), Idaho (January 1, 2020), Utah (January 1, 2020), and Nebraska (October 1, 2020). (See Figure 1.)
+
+So, 
+1/1/2014: Arizona, Arkansas, California, Colorado, Connecticut, Delaware, District of Columbia, Hawaii, Illinois, Iowa, Kentucky, Maryland, Massachusetts, Minnesota, Nevada, New Jersey, New Mexico, New York, North Dakota, Ohio, Oregon, Rhode Island, Vermont, and Washington
+
+Later in 2014: Michigan (April 1) and New Hampshire (August 15)
+
+2015: Pennsylvania (January 1), Indiana (February 1), and Alaska (September 1)
+
+2016: Montana (Jan 1) and Louisiana (July 1)
+
+2019: Virginia and Maine (Jan 1)
+
+2020: Idaho and Utah, (Jan 1) Nebraska (Oct 1)
+
+2021: Oklahoma (July 1), Missouri (Oct 1)
+
+2023: South Dakota (July 1) and North Carolina (Dec 1)
 ## Data code
 
-```{r}
-enrollment_data <- read_csv("Final Proj Data/pi-dataset-february-2026release.csv")
-head(enrollment_data)
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(janitor)
+library(modelsummary)
+library(ggplot2)
+library(readr)
+library(dplyr)
 ```
+
+# Data setup
+
+```{r}
+expansion_data    <- read_csv("Datasets/medicaid_expansion_tracker.csv")
+perc_uninsured     <- read_csv("Datasets/2008to2024_coverage.csv")
+healthcare_cost    <- read_csv("Datasets/Expenditure_2003_2019.csv")
+```
+
+# Cleaning and Merging
+
+### One row per state-year
+```{r}
+coverage_clean <- perc_uninsured |>
+  clean_names() |>
+  mutate(
+    state = str_to_upper(str_trim(state)),
+    year  = as.integer(year),
+    uninsured_rate = as.numeric(uninsured),
+    medicaid_rate  = as.numeric(medicaid)
+  ) |>
+  filter(year >= 2010, year <= 2019, state != "UNITED STATES") |>
+  select(state, year, uninsured_rate, medicaid_rate)
+```
+
+
+### Expansion = expansion year per state
+```{r}
+expansion_clean <- expansion_data |>
+  clean_names() |>
+  mutate(
+    state = str_to_upper(str_trim(state)),
+    # Handles "01/01/2014", "Not Expanded", NA
+    expansion_year = as.integer(
+      str_extract(expansion_date, "\\d{4}")  # pulls the 4-digit year
+    )
+  ) |>
+  select(state, expansion_year)
+```
+
+
+### Keep only total per-capita spending from the dataset
+```{r}
+spending_clean <- healthcare_cost |>
+  clean_names() |>
+  mutate(
+    state = str_to_upper(str_trim(state)),
+    year  = as.integer(year),
+    healthcare_spending = as.numeric(val)
+  ) |>
+  filter(
+    year >= 2010, year <= 2019,
+    group    == "Total",
+    subgroup == "Total",
+    metric   == "Spending per capita"
+  ) |>
+  select(state, year, healthcare_spending)
+```
+
+
+### Merge everything
+```{r}
+merged <- coverage_clean |>
+  left_join(expansion_clean,  by = "state") |>
+  left_join(spending_clean,   by = c("state", "year")) |>
+  mutate(
+    treated  = as.integer(!is.na(expansion_year)),          # ever expanded?
+    post_aca = as.integer(!is.na(expansion_year) &
+                            year >= expansion_year)          # post-expansion period?
+  )
+
+```
+
+# DiD line plot
+   Shows average uninsured rate by year for expansion vs. non-expansion states.The dashed line marks 2014, when most states expanded.
+
+```{r}
+plot_data <- merged |>
+  group_by(year, treated) |>
+  summarise(mean_uninsured = mean(uninsured_rate, na.rm = TRUE), .groups = "drop") |>
+  mutate(Group = if_else(treated == 1, "Expansion States", "Non-Expansion States"))
+
+did_plot <- ggplot(plot_data, aes(x = year, y = mean_uninsured, color = Group)) +
+  geom_line(linewidth = 1.3) +
+  geom_point(size = 2.5) +
+  geom_vline(xintercept = 2014, linetype = "dashed", color = "grey40") +
+  annotate("text", x = 2014.15, y = max(plot_data$mean_uninsured) * 0.98,
+           label = "ACA Expansion\n(Jan 2014)", hjust = 0, size = 3.2, color = "grey40") +
+  scale_color_manual(values = c("Expansion States" = "#2166ac",
+                                "Non-Expansion States" = "#d6604d")) +
+  scale_x_continuous(breaks = 2010:2019) +
+  labs(
+    title    = "Uninsured Rates: Expansion vs. Non-Expansion States",
+    x        = "Year",
+    y        = "Average Uninsured Rate (%)",
+    color    = NULL,
+    caption  = "2020 omitted (COVID survey disruption). From US Census Data."
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(
+    legend.position   = "top",
+    panel.grid.minor  = element_blank(),
+    plot.title        = element_text(face = "bold")
+  )
+
+did_plot
+ggsave("did_parallel_trends.png", did_plot, width = 9, height = 5.5, dpi = 150)
+```
+
+
+# Regression DiD
+ 
+```{r}
+did_model <- lm(
+  uninsured_rate ~ post_aca + factor(state) + factor(year),
+  data = merged
+)
+```
+
+
+### Table (Fig 2)
+
+```{r did-table, results='asis'}
+library(kableExtra)
+
+modelsummary(
+  did_model,
+  output    = "data.frame",
+  stars     = c("*" = 0.1, "**" = 0.05, "***" = 0.01),
+  statistic = "({std.error})",
+  coef_map  = c("post_aca" = "Post-Expansion (DiD Estimate)"),
+  gof_map   = c("nobs", "r.squared", "adj.r.squared")
+) %>%
+kable(
+  caption = "Fig 2. Effect of Medicaid Expansion on Uninsured Rate",
+  align = "lccc"
+) %>%
+kable_styling(full_width = FALSE) %>%
+column_spec(1, width = "6cm")   # 👈 wraps long variable names
+
+```
+
+# Interpretation
+After a state expanded Medicaid, its uninsured rate fell by 1.1 percentage points more than non-expansion states did over the same period. This is statistically significant at the 1% level.
+If a non-expansion state's uninsured rate fell from 15% to 13% over the same years, an expansion state would have fallen from 15% to roughly 11.9%.
+Next steps are to map these changes by racial demographic, to map them by individuals who use medicaid as their only form of insurance, and to map early expanders vs later expanders. 
