@@ -1723,10 +1723,6 @@ burden.</p></li>
 <li><p>Early vs late expanders showed no significant difference in the
 above metric.</p></li>
 </ul>
-</div>
-</div>
-<div id="data-setup-cleaning-and-merging" class="section level1">
-<h1>Data Setup, Cleaning, and Merging</h1>
 <pre><code>## Rows: 51 Columns: 171
 ## ── Column specification ───────────────────────────────────────────────────────────────────────────────
 ## Delimiter: &quot;,&quot;
@@ -1758,6 +1754,7 @@ above metric.</p></li>
 ## 
 ## ℹ Use `spec()` to retrieve the full column specification for this data.
 ## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+</div>
 </div>
 <div id="high-medical-burden-rate-by-cohort-line-plots-data-sectionvariable-visualization" class="section level1">
 <h1>High Medical Burden Rate by Cohort (Line Plots) – Data
@@ -1885,6 +1882,174 @@ Missing data in certain state-year combinations further weakens the
 analysis. With more time and resources, I would measure multiple metrics
 like uninsured rates, the number of preventable hospital/ER visits, and
 more.</p>
+<pre class="r"><code>knitr::opts_chunk$set(echo = FALSE)
+library(tidyverse)
+library(janitor)
+library(modelsummary)
+library(ggplot2)
+library(readr)
+library(dplyr)
+library(ggpubr)
+library(infer)
+library(broom)
+library(kableExtra)
+expansion_data &lt;- read_csv(&quot;Datasets/medicaid_expansion_tracker.csv&quot;)
+perc_uninsured  &lt;- read_csv(&quot;Datasets/2008to2024_coverage.csv&quot;)
+burden2013.17   &lt;- read_csv(&quot;Datasets/burden2013-2017.csv&quot;, skip = 6)
+burden2017.24   &lt;- read_csv(&quot;Datasets/resave_burden2024.csv&quot;, skip = 7)
+# For 2017–2024
+burden2017.24 &lt;- burden2017.24[, !(names(burden2017.24) %in% c(&quot;Fips&quot;, &quot;MOE&quot;, &quot;Data Type&quot;))]
+names(burden2017.24) &lt;- c(&quot;State&quot;, &quot;Year&quot;, &quot;High Burden Prop&quot;)
+burden2017.24$State            &lt;- as.character(burden2017.24$State)
+burden2017.24$Year             &lt;- as.numeric(burden2017.24$Year)
+burden2017.24$`High Burden Prop` &lt;- as.numeric(burden2017.24$`High Burden Prop`)
+
+# For 2013–2017
+burden2013.17 &lt;- burden2013.17[, !(names(burden2013.17) %in% c(&quot;Fips&quot;, &quot;MOE&quot;, &quot;Data Type&quot;))]
+names(burden2013.17) &lt;- c(&quot;State&quot;, &quot;Year&quot;, &quot;High Burden Prop&quot;)
+burden2013.17$State            &lt;- as.character(burden2013.17$State)
+burden2013.17$Year             &lt;- as.numeric(burden2013.17$Year)
+burden2013.17$`High Burden Prop` &lt;- as.numeric(burden2013.17$`High Burden Prop`)
+burden_all &lt;- rbind(burden2013.17, burden2017.24)
+burden_all &lt;- burden_all[!(duplicated(burden_all[, c(&quot;State&quot;, &quot;Year&quot;)])), ]
+burden_all &lt;- burden_all[order(burden_all$State, burden_all$Year), ]
+burden_all$State &lt;- trimws(burden_all$State)
+burden_all &lt;- burden_all |&gt;
+  mutate(State = str_to_upper(str_trim(State)))
+
+burden_clean &lt;- burden_all |&gt;
+  rename(
+    state            = State,
+    year             = Year,
+    high_burden_prop = `High Burden Prop`
+  )
+expansion_clean &lt;- expansion_data |&gt;
+  clean_names() |&gt;
+  mutate(
+    state          = str_to_upper(str_trim(state)),
+    expansion_year = as.integer(str_extract(expansion_date, &quot;\\d{4}&quot;))
+  ) |&gt;
+  mutate(
+    cohort = case_when(
+      expansion_year == 2014 ~ &quot;Early (2014)&quot;,
+      expansion_year &gt; 2014  ~ &quot;Late (2015+)&quot;,
+      is.na(expansion_year)  ~ &quot;Never Expanded&quot;
+    )
+  ) |&gt;
+  select(state, expansion_year, cohort)
+
+coverage_clean &lt;- perc_uninsured |&gt;
+  clean_names() |&gt;
+  mutate(
+    state         = str_to_upper(str_trim(state)),
+    year          = as.integer(year),
+    uninsured_rate = as.numeric(uninsured),
+    medicaid_rate  = as.numeric(medicaid)
+  ) |&gt;
+  filter(year &gt;= 2010, year &lt;= 2024, state != &quot;UNITED STATES&quot;) |&gt;
+  select(state, year, uninsured_rate, medicaid_rate)
+
+master_data &lt;- coverage_clean |&gt;
+  left_join(burden_clean, by = c(&quot;state&quot;, &quot;year&quot;)) |&gt;
+  left_join(expansion_clean, by = &quot;state&quot;) |&gt;
+  mutate(
+    cohort = factor(cohort),
+    three_yr_window = ifelse(
+      !is.na(expansion_year) &amp;
+      year &gt;= expansion_year &amp;
+      year &lt;= expansion_year + 3,
+      1, 0
+    )
+  )
+
+master_data &lt;- master_data |&gt;
+  mutate(
+    cohort = str_trim(cohort),
+    cohort = factor(cohort),
+    cohort = relevel(cohort, ref = &quot;Never Expanded&quot;),
+    post   = ifelse(year &gt;= 2014, 1, 0)
+  )
+master_data |&gt;
+  group_by(year) |&gt;
+  summarize(avg_burden = mean(high_burden_prop, na.rm = TRUE)) |&gt;
+  ggplot(aes(x = year, y = avg_burden)) +
+  geom_line(color = &quot;black&quot;, linewidth = 1) +
+  geom_point(color = &quot;black&quot;, size = 2) +
+  scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
+  labs(
+    title = &quot;Average High Medical Burden Rate Over Time&quot;,
+    subtitle = &quot;National average across all 50 states&quot;,
+    x = &quot;Year&quot;,
+    y = &quot;Average High Burden Rate&quot;,
+    caption = &quot;Source: SHADAC / University of Minnesota&quot;
+  ) +
+  theme_minimal()
+DiD_burden &lt;- master_data |&gt;
+  group_by(year, cohort) |&gt;
+  summarize(mean_burden = mean(high_burden_prop, na.rm = TRUE), .groups = &quot;drop&quot;)
+
+ggplot(DiD_burden, aes(x = year, y = mean_burden, color = cohort)) +
+  geom_line(linewidth = 1.3) +
+  geom_point(size = 3) +
+  geom_vline(xintercept = 2014, linetype = &quot;dashed&quot;, color = &quot;grey40&quot;) +
+  scale_color_manual(values = c(
+    &quot;Early (2014)&quot;   = &quot;steelblue&quot;,
+    &quot;Late (2015+)&quot;   = &quot;#644969&quot;,
+    &quot;Never Expanded&quot; = &quot;indianred&quot;
+  )) +
+  labs(
+    title   = &quot;High Medical Burden Rates by Medicaid Expansion Cohort&quot;,
+    x       = &quot;Year&quot;,
+    y       = &quot;Average High Burden Rate (%)&quot;,
+    color   = NULL,
+    caption = &quot;Dashed line = 2014 ACA expansion. Source: SHADAC / University of Minnesota.&quot;
+  ) +
+  theme_minimal() +
+  scale_x_continuous(
+    breaks       = seq(2010, 2024, by = 2),
+    minor_breaks = 2010:2024
+  )
+ggplot(master_data, aes(x = cohort, y = high_burden_prop, fill = cohort)) +
+  geom_boxplot(alpha = 0.7, outlier.shape = 21, outlier.size = 2) +
+  scale_fill_manual(values = c(
+    &quot;Early (2014)&quot;   = &quot;steelblue&quot;,
+    &quot;Late (2015+)&quot;   = &quot;#644969&quot;,
+    &quot;Never Expanded&quot; = &quot;indianred&quot;
+  )) +
+  stat_compare_means(
+    comparisons = list(
+      c(&quot;Early (2014)&quot;, &quot;Never Expanded&quot;),
+      c(&quot;Late (2015+)&quot;, &quot;Never Expanded&quot;),
+      c(&quot;Early (2014)&quot;, &quot;Late (2015+)&quot;)
+    ),
+    method = &quot;wilcox.test&quot;,
+    label  = &quot;p.signif&quot; 
+  ) +
+  labs(
+    title   = &quot;Distribution of High Medical Burden Rates by Expansion Cohort&quot;,
+    x       = NULL,
+    y       = &quot;High Burden Rate (%)&quot;,
+    fill    = NULL,
+    caption = &quot;All years pooled (2013–2024). Source: SHADAC / University of Minnesota.&quot;
+  ) +
+  theme_minimal() +
+  theme(legend.position = &quot;none&quot;)
+model_burden &lt;- lm(high_burden_prop ~ cohort * post, data = master_data)
+
+tidy(model_burden) |&gt;
+  mutate(
+    term = recode(term,
+      &quot;(Intercept)&quot;                  = &quot;Baseline Burden Rate (Never Expanded, Pre-2014)&quot;,
+      &quot;cohortEarly (2014)&quot;           = &quot;Early Expansion States (2014)&quot;,
+      &quot;cohortLate (2015+)&quot;           = &quot;Late Expansion States (2015+)&quot;,
+      &quot;post&quot;                         = &quot;Post-2014 Period&quot;,
+      &quot;cohortEarly (2014):post&quot;      = &quot;Early × Post (DiD Effect)&quot;,
+      &quot;cohortLate (2015+):post&quot;      = &quot;Late × Post (DiD Effect)&quot;
+    ),
+    p.value = round(p.value, 4)
+  ) |&gt;
+  select(term, estimate, std.error, p.value) |&gt; 
+ kable(digits = 3, col.names = c(&quot;Term&quot;, &quot;Estimate&quot;, &quot;Std. Error&quot;, &quot;P-value&quot;))</code></pre>
 </div>
 
 

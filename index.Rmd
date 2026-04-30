@@ -66,7 +66,7 @@ The correlation on the expansion variable is:
 - Early vs late expanders showed no significant difference in the above metric. 
 
 
-# Data Setup, Cleaning, and Merging
+
 
 ```{r setup, echo = FALSE}
 knitr::opts_chunk$set(echo = FALSE)
@@ -311,3 +311,8 @@ However, correlation does not equal causation. You can't interpret this causally
 # Conclusion:
 
 Overall, the results offer only partial support for my hypotheses. The boxplot and line plot suggest that Early (2014) expansion states had lower high burden rates than Never Expanded states (a statistically significant difference), which is consistent with Hypothesis 1. However, the difference-in-differences regression did not find statistically significant interactions between Early and Late cohorts, so Hypothesis 2 was not supported. Several limitations threaten inference here: states self-selected into expansion, meaning political climate, demographics, and pre-existing healthcare infrastructure likely confound the results. Missing data in certain state-year combinations further weakens the analysis. With more time and resources, I would measure multiple metrics like uninsured rates, the number of preventable hospital/ER visits, and more.  
+
+```{r print-code, ref.label=knitr::all_labels(), echo = TRUE, eval=FALSE}
+
+```
+
