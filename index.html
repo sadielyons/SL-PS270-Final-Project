@@ -11,7 +11,7 @@
 
 <meta name="author" content="Sadie Lyons" />
 
-<meta name="date" content="2026-04-29" />
+<meta name="date" content="2026-04-30" />
 
 <title>ACA project</title>
 
@@ -1623,7 +1623,7 @@ display: none;
 
 <h1 class="title toc-ignore">ACA project</h1>
 <h4 class="author">Sadie Lyons</h4>
-<h4 class="date">2026-04-29</h4>
+<h4 class="date">2026-04-30</h4>
 
 </div>
 
@@ -1845,12 +1845,10 @@ Missing data in certain state-year combinations further weakens the
 analysis. With more time and resources, I would measure multiple metrics
 like uninsured rates, the number of preventable hospital/ER visits, and
 more.</p>
-<pre class="r"><code>knitr::opts_chunk$set(
-  echo = FALSE,
-  message = FALSE,
-  warning = FALSE
-)
-knitr::opts_chunk$set(echo = FALSE)
+<pre class="r"><code>knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+
+options(readr.show_col_types = FALSE)
+
 library(tidyverse)
 library(janitor)
 library(modelsummary)
