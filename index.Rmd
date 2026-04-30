@@ -1,263 +1,311 @@
 ---
-title: "PS270 Final Project"
+title: "ACA project"
 author: "Sadie Lyons"
-description: "My final project"
-output:
-  distill::distill_article:
-    self_contained: false
+date: "`r Sys.Date()`"
+output: pdf_document
 ---
 
-```{r include= FALSE}
-library(tidyverse)
-library(readr)
-library(dplyr)
-library(haven)
-library(ggplot2)
-library(infer)
-library(janitor)
-library(readxl)
-library(kableExtra)
-```
+AI disclosure statement:
+While I did not use AI to write code for this project, I used it to help troubleshoot and format my figures. 
 
-## Project thoughts
+- For graphs and regression tables, I would use it to fix overlapping text or clean up the appearance. 
 
-I am interested in exploring data related to...
+- I also used it at the end of my project by having it format my already-written code so that it was easier for graders to read. 
 
-- Pharmaceutical pricing. Whether pricing has strong relationships with certain providers, if there are geographical implications, etc. 
+- AI taught me to use "skip" when reading a csv so that my categories of variables were assigned properly.
 
-- Healthcare coverage and insurance pricing. Similar to above, I think this would be interesting to explore.
-
-- FDA data. Now that there are new regulations (or lack thereof) for testing food products for common pathogens, I want to see how much the number of recalls has increased under the new administration. 
+- used it to help me put minor tick marks in my line plot
 
 
+# **Project Introduction**
 
-# Project Outline (Milestone 2)
+The Affordable Care Act was put into action for the first time on January 1st, 2014. It promised to expand government-funded healthcare, making it cheaper for middle and low income families to afford their medical costs. This project explores the efficacy of that bill in terms of out-of-pocket healthcare spending.  However, not all states adopted the expansion right away. Some states still have not expanded their medicaid as of 2026, and while 22 states joined in 2014, several others expanded later. This project aims to map the efficacy of the bill over time by using a difference-in-differences deign by comparing the benefits for states who were early enrollers (2014) vs late (2015 - 2024). 
 
-My Final Project Research Question:
-Did states that expanded Medicaid under the Affordable Care Act experience larger declines in uninsured rates than states that did not expand? 
-Sub-questions: 
--Did the effect differ by income level?
-- Did the effect differ more in cities than in rural areas?
 
 ## My Hypothesis:
+**1. States that expanded medicaid under the Affordable Care Act will have lower proportions of residents experiencing a high financial burden due to medical cost.**
 
-**States that expanded Medicaid will experience larger reductions in uninsured rates than states that did not expand Medicaid.**
+**2. The effects on these metrics will be greater for States that expanded in 2014 ("Early") than those that expanded from 2015 to 2023 ("Late").**
 
-I think this will prove true because the lack of insurance coverage can often be attributed to financial inaccessibility and restraints on eligibility. The affordable care act attempted to lower both of these hurdles for the American public, but it's hard to say whether it was effective. 
-In 2014, just before the Affordable Care Act was passed,
+I think this will prove true because the lack of insurance coverage can often be attributed to financial inaccessibility and restraints on eligibility. The affordable care act attempted to lower both of these hurdles for the American public.
 
-Many low-income adults earned too much to qualify for traditional Medicaid, but too little to afford private insurance coverage. This created a coverage gap for middle-income and some low-income households.
+Many low-income adults earn too much to qualify for traditional Medicaid, but too little to afford private insurance coverage. This creates a coverage gap for middle-income and some low-income households.
 
-Ideally, when prices of healthcare decrease and eligibility is expanded through federal programs, healthcare coverage nationwide should increase.Therefore, I expect a systematic decline in uninsured rates in expansion states relative to non-expansion states.
+Ideally, when prices of healthcare decrease and eligibility is expanded through federal programs, healthcare coverage nationwide should increase, and cost/burden should decrease.
+
+Examining these questions is important because the financial burden of healthcare shapes life outcomes, keeps people from regularly attending doctors' visits, and shapes political opinions.
 
 ## Explanatory Variables:
 
-I will be doing a difference-in-differences model. Basically, I will be analyzing the coverage levels and uninsured rates across states and across years.
+As stated earlier, this project uses a difference-in-differences model. Basically, I will be analyzing coverage levels and burden rates across states and across years.
 
-Variable 1: State expansion. Did this state adopt the Affordable Care Act's adjustments within the years of 2014 and 2020? This will be a simple yes or no in terms of measurements, and can be accessed through public data and state legislature. (output 0 or 1)
-Variable 2: Uninsured Rate. What were the rates for uninsured individuals in this state during the years in question? This will be a number of USD, one value/rate per year. 
+**Variable 1:** State expansion. Did this state adopt the Affordable Care Act's adjustments? This will be a simple "yes" or "no" in terms of measurements, and can be accessed through public data and state legislature. (output 0 or 1)
 
-Subquestion variables:
+**Variable 2:** Time of expansion. Through state legislature, I was able to find the medicaid expansion date (or lack thereof) for all 50 states. Since one main goal of this project is to map the ACA's efficacy over time, states will be split into cohorts depending on when they elected to expand medicaid. Early expanders occur in 2014. Because states joined sporadically after that, late expanders will be 2015 to 2023.
 
-Income level. Did the trends observed above change when grouped by household income?
-Area population. Did the trends observed above change when grouped by cities vs rural areas?
+## Outcome Variable:
 
-## Outcome Variables:
-Coverage proportion by state: The percentage of individuals in a state-year without health insurance coverage. This will be measured by a percent using public data from the American Community Survey (ACS) and Kaiser Family Foundation state-level insurance data
+**Proportion of people with a high medical burden.** According to SHADAC and the University of Minnesota, this is qualified as "Share of individuals who are in families where out-of-pocket spending on health care, including premiums, accounted for more than 10 percent of annual income for the civilian non-institutionalized population."
 
 ## What would prove my hypothesis true?
-Expansion and non-expansion states have similar uninsured trends before expansion (parallel trends assumption).
 
-After expansion begins (2014), uninsured rates decline more sharply in expansion states than in non-expansion states.
+After expansion begins (2014), burden rates decline more sharply in expansion states than in non-expansion states.
 
-The correlation on the expansion variable (once made into a regression equation or visualized in figures) is:
+The correlation on the expansion variable is:
 
-- Negative (meaning states who adopted the act had increased coverage over time)
+- Negative (meaning states who adopted the act had decreased burden over time)
 
 - Statistically significant
+- Additionally, (for hyp 2,) these correlations are stronger for Early expanders.
 
 ## What would disprove my hypothesis?
-- Expansion and non-expansion states had the same amount of change in coverage proportion and/or uninsured rate. 
-- States who did not expand had more coverage or lower uninsured rates over time. 
+- Expansion and non-expansion states had no statistically significant difference in the proportion of people with a high medical burden.
+
+- Early vs late expanders showed no significant difference in the above metric. 
 
 
-## Initial Steps, Figures, etc. (Milestones 2-4)
+# Data Setup, Cleaning, and Merging
 
-Here are some notes from congress.gov about when each state expanded Medicaid under the affordable care act:
-
-Since January 1, 2014, states have had the option to extend Medicaid coverage to most non-elderly adults with income up to 133% of FPL. Twenty-five states (including the District of Columbia) implemented the ACA Medicaid expansion at that time. Since then, the following 12 states have implemented the expansion: Michigan (April 1, 2014), New Hampshire (July 1, 2014), Pennsylvania (January 1, 2015), Indiana (February 1, 2015), Alaska (September 1, 2015), Montana (January 1, 2016), Louisiana (July 1, 2016), Virginia (January 1, 2019), Maine (January 10, 2019), Idaho (January 1, 2020), Utah (January 1, 2020), and Nebraska (October 1, 2020). (See Figure 1.)
-
-So, 
-1/1/2014: Arizona, Arkansas, California, Colorado, Connecticut, Delaware, District of Columbia, Hawaii, Illinois, Iowa, Kentucky, Maryland, Massachusetts, Minnesota, Nevada, New Jersey, New Mexico, New York, North Dakota, Ohio, Oregon, Rhode Island, Vermont, and Washington
-
-Later in 2014: Michigan (April 1) and New Hampshire (August 15)
-
-2015: Pennsylvania (January 1), Indiana (February 1), and Alaska (September 1)
-
-2016: Montana (Jan 1) and Louisiana (July 1)
-
-2019: Virginia and Maine (Jan 1)
-
-2020: Idaho and Utah, (Jan 1) Nebraska (Oct 1)
-
-2021: Oklahoma (July 1), Missouri (Oct 1)
-
-2023: South Dakota (July 1) and North Carolina (Dec 1)
-## Data code
-
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+```{r setup, echo = FALSE}
+knitr::opts_chunk$set(echo = FALSE)
 library(tidyverse)
 library(janitor)
 library(modelsummary)
 library(ggplot2)
 library(readr)
 library(dplyr)
+library(ggpubr)
+library(infer)
+library(broom)
+library(kableExtra)
 ```
 
 # Data setup
 
-```{r}
-expansion_data    <- read_csv("Datasets/medicaid_expansion_tracker.csv")
-perc_uninsured     <- read_csv("Datasets/2008to2024_coverage.csv")
-healthcare_cost    <- read_csv("Datasets/Expenditure_2003_2019.csv")
+```{r, echo=FALSE}
+expansion_data <- read_csv("Datasets/medicaid_expansion_tracker.csv")
+perc_uninsured  <- read_csv("Datasets/2008to2024_coverage.csv")
+burden2013.17   <- read_csv("Datasets/burden2013-2017.csv", skip = 6)
+burden2017.24   <- read_csv("Datasets/resave_burden2024.csv", skip = 7)
+```
+
+# Cleaning Names of my Burden Data
+
+```{r, echo = FALSE}
+# For 2017–2024
+burden2017.24 <- burden2017.24[, !(names(burden2017.24) %in% c("Fips", "MOE", "Data Type"))]
+names(burden2017.24) <- c("State", "Year", "High Burden Prop")
+burden2017.24$State            <- as.character(burden2017.24$State)
+burden2017.24$Year             <- as.numeric(burden2017.24$Year)
+burden2017.24$`High Burden Prop` <- as.numeric(burden2017.24$`High Burden Prop`)
+
+# For 2013–2017
+burden2013.17 <- burden2013.17[, !(names(burden2013.17) %in% c("Fips", "MOE", "Data Type"))]
+names(burden2013.17) <- c("State", "Year", "High Burden Prop")
+burden2013.17$State            <- as.character(burden2013.17$State)
+burden2013.17$Year             <- as.numeric(burden2013.17$Year)
+burden2013.17$`High Burden Prop` <- as.numeric(burden2013.17$`High Burden Prop`)
 ```
 
 # Cleaning and Merging
 
-### One row per state-year
-```{r}
-coverage_clean <- perc_uninsured |>
-  clean_names() |>
-  mutate(
-    state = str_to_upper(str_trim(state)),
-    year  = as.integer(year),
-    uninsured_rate = as.numeric(uninsured),
-    medicaid_rate  = as.numeric(medicaid)
-  ) |>
-  filter(year >= 2010, year <= 2019, state != "UNITED STATES") |>
-  select(state, year, uninsured_rate, medicaid_rate)
+```{r, echo = FALSE}
+burden_all <- rbind(burden2013.17, burden2017.24)
+burden_all <- burden_all[!(duplicated(burden_all[, c("State", "Year")])), ]
+burden_all <- burden_all[order(burden_all$State, burden_all$Year), ]
+burden_all$State <- trimws(burden_all$State)
+burden_all <- burden_all |>
+  mutate(State = str_to_upper(str_trim(State)))
+
+burden_clean <- burden_all |>
+  rename(
+    state            = State,
+    year             = Year,
+    high_burden_prop = `High Burden Prop`
+  )
 ```
 
+### One row per state per year
 
-### Expansion = expansion year per state
-```{r}
+```{r, echo = FALSE}
 expansion_clean <- expansion_data |>
   clean_names() |>
   mutate(
-    state = str_to_upper(str_trim(state)),
-    # Handles "01/01/2014", "Not Expanded", NA
-    expansion_year = as.integer(
-      str_extract(expansion_date, "\\d{4}")  # pulls the 4-digit year
+    state          = str_to_upper(str_trim(state)),
+    expansion_year = as.integer(str_extract(expansion_date, "\\d{4}"))
+  ) |>
+  mutate(
+    cohort = case_when(
+      expansion_year == 2014 ~ "Early (2014)",
+      expansion_year > 2014  ~ "Late (2015+)",
+      is.na(expansion_year)  ~ "Never Expanded"
     )
   ) |>
-  select(state, expansion_year)
+  select(state, expansion_year, cohort)
+expansion_clean
 ```
 
-
-### Keep only total per-capita spending from the dataset
-```{r}
-spending_clean <- healthcare_cost |>
+```{r, echo = FALSE}
+coverage_clean <- perc_uninsured |>
   clean_names() |>
   mutate(
-    state = str_to_upper(str_trim(state)),
-    year  = as.integer(year),
-    healthcare_spending = as.numeric(val)
+    state         = str_to_upper(str_trim(state)),
+    year          = as.integer(year),
+    uninsured_rate = as.numeric(uninsured),
+    medicaid_rate  = as.numeric(medicaid)
   ) |>
-  filter(
-    year >= 2010, year <= 2019,
-    group    == "Total",
-    subgroup == "Total",
-    metric   == "Spending per capita"
-  ) |>
-  select(state, year, healthcare_spending)
+  filter(year >= 2010, year <= 2024, state != "UNITED STATES") |>
+  select(state, year, uninsured_rate, medicaid_rate)
+coverage_clean
 ```
 
+# Merging all data to make one master dataset
 
-### Merge everything
-```{r}
-merged <- coverage_clean |>
-  left_join(expansion_clean,  by = "state") |>
-  left_join(spending_clean,   by = c("state", "year")) |>
+```{r, echo = FALSE}
+master_data <- coverage_clean |>
+  left_join(burden_clean, by = c("state", "year")) |>
+  left_join(expansion_clean, by = "state") |>
   mutate(
-    treated  = as.integer(!is.na(expansion_year)),          # ever expanded?
-    post_aca = as.integer(!is.na(expansion_year) &
-                            year >= expansion_year)          # post-expansion period?
+    cohort = factor(cohort),
+    three_yr_window = ifelse(
+      !is.na(expansion_year) &
+      year >= expansion_year &
+      year <= expansion_year + 3,
+      1, 0
+    )
   )
 
+master_data <- master_data |>
+  mutate(
+    cohort = str_trim(cohort),
+    cohort = factor(cohort),
+    cohort = relevel(cohort, ref = "Never Expanded"),
+    post   = ifelse(year >= 2014, 1, 0)
+  )
 ```
 
-# DiD line plot
-   Shows average uninsured rate by year for expansion vs. non-expansion states.The dashed line marks 2014, when most states expanded.
+# High Medical Burden Rate by Cohort (Line Plots) -- Data section/Variable visualization
+
 
 ```{r}
-plot_data <- merged |>
-  group_by(year, treated) |>
-  summarise(mean_uninsured = mean(uninsured_rate, na.rm = TRUE), .groups = "drop") |>
-  mutate(Group = if_else(treated == 1, "Expansion States", "Non-Expansion States"))
-
-did_plot <- ggplot(plot_data, aes(x = year, y = mean_uninsured, color = Group)) +
-  geom_line(linewidth = 1.3) +
-  geom_point(size = 2.5) +
-  geom_vline(xintercept = 2014, linetype = "dashed", color = "grey40") +
-  annotate("text", x = 2014.15, y = max(plot_data$mean_uninsured) * 0.98,
-           label = "ACA Expansion\n(Jan 2014)", hjust = 0, size = 3.2, color = "grey40") +
-  scale_color_manual(values = c("Expansion States" = "#2166ac",
-                                "Non-Expansion States" = "#d6604d")) +
-  scale_x_continuous(breaks = 2010:2019) +
+master_data |>
+  group_by(year) |>
+  summarize(avg_burden = mean(high_burden_prop, na.rm = TRUE)) |>
+  ggplot(aes(x = year, y = avg_burden)) +
+  geom_line(color = "black", linewidth = 1) +
+  geom_point(color = "black", size = 2) +
+  scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
   labs(
-    title    = "Uninsured Rates: Expansion vs. Non-Expansion States",
-    x        = "Year",
-    y        = "Average Uninsured Rate (%)",
-    color    = NULL,
-    caption  = "2020 omitted (COVID survey disruption). From US Census Data."
+    title = "Average High Medical Burden Rate Over Time",
+    subtitle = "National average across all 50 states",
+    x = "Year",
+    y = "Average High Burden Rate",
+    caption = "Source: SHADAC / University of Minnesota"
   ) +
-  theme_minimal(base_size = 13) +
-  theme(
-    legend.position   = "top",
-    panel.grid.minor  = element_blank(),
-    plot.title        = element_text(face = "bold")
+  theme_minimal()
+```
+
+```{r, echo = FALSE}
+DiD_burden <- master_data |>
+  group_by(year, cohort) |>
+  summarize(mean_burden = mean(high_burden_prop, na.rm = TRUE), .groups = "drop")
+
+ggplot(DiD_burden, aes(x = year, y = mean_burden, color = cohort)) +
+  geom_line(linewidth = 1.3) +
+  geom_point(size = 3) +
+  geom_vline(xintercept = 2014, linetype = "dashed", color = "grey40") +
+  scale_color_manual(values = c(
+    "Early (2014)"   = "steelblue",
+    "Late (2015+)"   = "#644969",
+    "Never Expanded" = "indianred"
+  )) +
+  labs(
+    title   = "High Medical Burden Rates by Medicaid Expansion Cohort",
+    x       = "Year",
+    y       = "Average High Burden Rate (%)",
+    color   = NULL,
+    caption = "Dashed line = 2014 ACA expansion. Source: SHADAC / University of Minnesota."
+  ) +
+  theme_minimal() +
+  scale_x_continuous(
+    breaks       = seq(2010, 2024, by = 2),
+    minor_breaks = 2010:2024
   )
-
-did_plot
-ggsave("did_parallel_trends.png", did_plot, width = 9, height = 5.5, dpi = 150)
 ```
 
 
-# Regression DiD
- 
+
+
+# ** RESULTS** -- BOX PLOT WITH SIGNIFICANCE INDICATORS
 ```{r}
-did_model <- lm(
-  uninsured_rate ~ post_aca + factor(state) + factor(year),
-  data = merged
-)
+ggplot(master_data, aes(x = cohort, y = high_burden_prop, fill = cohort)) +
+  geom_boxplot(alpha = 0.7, outlier.shape = 21, outlier.size = 2) +
+  scale_fill_manual(values = c(
+    "Early (2014)"   = "steelblue",
+    "Late (2015+)"   = "#644969",
+    "Never Expanded" = "indianred"
+  )) +
+  stat_compare_means(
+    comparisons = list(
+      c("Early (2014)", "Never Expanded"),
+      c("Late (2015+)", "Never Expanded"),
+      c("Early (2014)", "Late (2015+)")
+    ),
+    method = "wilcox.test",
+    label  = "p.signif" 
+  ) +
+  labs(
+    title   = "Distribution of High Medical Burden Rates by Expansion Cohort",
+    x       = NULL,
+    y       = "High Burden Rate (%)",
+    fill    = NULL,
+    caption = "All years pooled (2013–2024). Source: SHADAC / University of Minnesota."
+  ) +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+**Interpretation**
+
+From this boxplot, we see the distribution of high medical burden rates for each of our cohorts. The Early cohort has the lowest mean, with the "Never Expanded" and "Late" cohorts having high means. The range of values in each cohort is roughly the same. The stars branching between the "Never" and "Early" boxes show significance, as do the Early vs Late. "ns" here stands for not significant. 
+
+# **REGRESSION MODEL**
+
+```{r, echo = FALSE}
+model_burden <- lm(high_burden_prop ~ cohort * post, data = master_data)
+
+tidy(model_burden) |>
+  mutate(
+    term = recode(term,
+      "(Intercept)"                  = "Baseline Burden Rate (Never Expanded, Pre-2014)",
+      "cohortEarly (2014)"           = "Early Expansion States (2014)",
+      "cohortLate (2015+)"           = "Late Expansion States (2015+)",
+      "post"                         = "Post-2014 Period",
+      "cohortEarly (2014):post"      = "Early × Post (DiD Effect)",
+      "cohortLate (2015+):post"      = "Late × Post (DiD Effect)"
+    ),
+    p.value = round(p.value, 4)
+  ) |>
+  select(term, estimate, std.error, p.value) |> 
+ kable(digits = 3, col.names = c("Term", "Estimate", "Std. Error", "P-value"))
 ```
 
+**Interpretation:**
 
-### Table (Fig 2)
+-The intercept represents the baseline average high medical burden rate in Never Expanded states prior to 2014.
 
-```{r did-table, results='asis'}
-library(kableExtra)
+-The Post-2014 coefficient captures the average change in burden rates after 2014 across all states, reflecting nationwide time trends unrelated to Medicaid expansion.
 
-modelsummary(
-  did_model,
-  output    = "data.frame",
-  stars     = c("*" = 0.1, "**" = 0.05, "***" = 0.01),
-  statistic = "({std.error})",
-  coef_map  = c("post_aca" = "Post-Expansion (DiD Estimate)"),
-  gof_map   = c("nobs", "r.squared", "adj.r.squared")
-) %>%
-kable(
-  caption = "Fig 2. Effect of Medicaid Expansion on Uninsured Rate",
-  align = "lccc"
-) %>%
-kable_styling(full_width = FALSE) %>%
-column_spec(1, width = "6cm")   # 👈 wraps long variable names
+- The points of interest are the difference-in-differences interaction terms. The Early (2014) × Post coefficient measures how much more (or less) high medical burden changed in early expansion states after 2014 relative to never-expanding states. The Late (2015+) × Post coefficient captures the same comparison for states that expanded after 2014.
 
-```
 
-# Interpretation
-After a state expanded Medicaid, its uninsured rate fell by 1.1 percentage points more than non-expansion states did over the same period. This is statistically significant at the 1% level.
-If a non-expansion state's uninsured rate fell from 15% to 13% over the same years, an expansion state would have fallen from 15% to roughly 11.9%.
-Next steps are to map these changes by racial demographic, to map them by individuals who use medicaid as their only form of insurance, and to map early expanders vs later expanders. 
+We cannot reject the null hypothesis for the difference-in-differences effects (Early × Post and Late × Post).
+This is because both interaction terms—the coefficients that capture the causal effect of Medicaid expansion in the DiD framework—have very large p-values (0.8433 and 0.9721), which are far above conventional significance thresholds (e.g., 0.05 or 0.10). Therefore, the differences could easily be due to random chance.
+
+We can reject the null hypothesis that expansion has an effect on burden at all. From the Post-2014 period (which just shows the effect for each state before and after expansion), we have a p-value of 0.0003. This indicates that there is a correlation between a state expanding medicaid (regardless of timing) and its change in burden rate. 
+
+However, correlation does not equal causation. You can't interpret this causally because states chose whether to expand Medicaid — there was no random assignment. States that expanded likely could also have political differences, healthcare policy bills in addition to ACA, or demographics that affected BOTH whether the state expanded AND whether uninsured rates dropped. 
+
+
+# Conclusion:
+
+Overall, the results offer only partial support for my hypotheses. The boxplot and line plot suggest that Early (2014) expansion states had lower high burden rates than Never Expanded states (a statistically significant difference), which is consistent with Hypothesis 1. However, the difference-in-differences regression did not find statistically significant interactions between Early and Late cohorts, so Hypothesis 2 was not supported. Several limitations threaten inference here: states self-selected into expansion, meaning political climate, demographics, and pre-existing healthcare infrastructure likely confound the results. Missing data in certain state-year combinations further weakens the analysis. With more time and resources, I would measure multiple metrics like uninsured rates, the number of preventable hospital/ER visits, and more.  
