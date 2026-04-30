@@ -82,7 +82,7 @@ library(broom)
 library(kableExtra)
 ```
 
-# Data setup
+
 
 ```{r, echo=FALSE}
 expansion_data <- read_csv("Datasets/medicaid_expansion_tracker.csv")
@@ -91,7 +91,7 @@ burden2013.17   <- read_csv("Datasets/burden2013-2017.csv", skip = 6)
 burden2017.24   <- read_csv("Datasets/resave_burden2024.csv", skip = 7)
 ```
 
-# Cleaning Names of my Burden Data
+
 
 ```{r, echo = FALSE}
 # For 2017–2024
@@ -109,7 +109,7 @@ burden2013.17$Year             <- as.numeric(burden2013.17$Year)
 burden2013.17$`High Burden Prop` <- as.numeric(burden2013.17$`High Burden Prop`)
 ```
 
-# Cleaning and Merging
+
 
 ```{r, echo = FALSE}
 burden_all <- rbind(burden2013.17, burden2017.24)
@@ -127,7 +127,7 @@ burden_clean <- burden_all |>
   )
 ```
 
-### One row per state per year
+
 
 ```{r, echo = FALSE}
 expansion_clean <- expansion_data |>
@@ -144,7 +144,7 @@ expansion_clean <- expansion_data |>
     )
   ) |>
   select(state, expansion_year, cohort)
-expansion_clean
+
 ```
 
 ```{r, echo = FALSE}
@@ -158,10 +158,10 @@ coverage_clean <- perc_uninsured |>
   ) |>
   filter(year >= 2010, year <= 2024, state != "UNITED STATES") |>
   select(state, year, uninsured_rate, medicaid_rate)
-coverage_clean
+
 ```
 
-# Merging all data to make one master dataset
+
 
 ```{r, echo = FALSE}
 master_data <- coverage_clean |>
