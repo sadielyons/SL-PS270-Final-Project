@@ -69,6 +69,11 @@ The correlation on the expansion variable is:
 
 
 ```{r setup, echo = FALSE}
+knitr::opts_chunk$set(
+  echo = FALSE,
+  message = FALSE,
+  warning = FALSE
+)
 knitr::opts_chunk$set(echo = FALSE)
 library(tidyverse)
 library(janitor)
